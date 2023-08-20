@@ -7,7 +7,7 @@ import java.util.Map;
 public class WordCounter {
     public static void main(String[] args) {
         System.out.println("Welcome to the Word Count Tool!");
-        System.out.println("Enter 'Text' to input text, or 'Read' to read from a file:");
+        System.out.println("Enter '0' to input text, or '1' to read from a file:");
 
         try (BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(System.in))) {
             String choice = reader.readLine();
