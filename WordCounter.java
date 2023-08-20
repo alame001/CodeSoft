@@ -1,98 +1,71 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-public class WordCounter extends JFrame {
-    private JTextArea textArea;
-    private JTextArea resultArea;
-
-    public WordCounter() {
-        setTitle("Word Counter");
-        setSize(400, 400);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        JLabel label = new JLabel("Enter text or choose a file:");
-        panel.add(label, BorderLayout.NORTH);
-
-        textArea = new JTextArea();
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        JButton countButton = new JButton("Count Words");
-        countButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                countWords(textArea.getText());
-            }
-        });
-        panel.add(countButton, BorderLayout.SOUTH);
-
-        JButton chooseFileButton = new JButton("Choose File");
-        chooseFileButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                chooseFile();
-            }
-        });
-        panel.add(chooseFileButton, BorderLayout.SOUTH);
-
-        resultArea = new JTextArea();
-        resultArea.setEditable(false);
-        JScrollPane resultScrollPane = new JScrollPane(resultArea);
-        panel.add(resultScrollPane, BorderLayout.SOUTH);
-
-        getContentPane().add(panel);
-    }
-
-    private void countWords(String text) {
-        String[] words = text.split("\\s+|\\p{Punct}");
-        int totalWords = words.length;
-        Set<String> uniqueWords = new HashSet<>(Arrays.asList(words));
-        Map<String, Integer> wordFreq = new HashMap<>();
-        for (String word : words) {
-            wordFreq.put(word, wordFreq.getOrDefault(word, 0) + 1);
-        }
-
-        resultArea.setText("Total words: " + totalWords + "\n");
-        resultArea.append("Unique words: " + uniqueWords.size() + "\n\n");
-        resultArea.append("Word Frequency:\n");
-        for (Map.Entry<String, Integer> entry : wordFreq.entrySet()) {
-            resultArea.append(entry.getKey() + ": " + entry.getValue() + "\n");
-        }
-    }
-
-    private void chooseFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "txt");
-        fileChooser.setFileFilter(filter);
-        int returnValue = fileChooser.showOpenDialog(this);
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(selectedFile));
-                StringBuilder content = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-                reader.close();
-                countWords(content.toString());
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "An error occurred: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
+public class WordCounter {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new WordCounter().setVisible(true);
+        System.out.println("Welcome to the Word Count Tool!");
+        System.out.println("Enter 'Text' to input text, or 'Read' to read from a file:");
+
+        try (BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(System.in))) {
+            String choice = reader.readLine();
+
+            switch (choice) {
+                case "1":
+                    System.out.println("Enter your text:");
+                    String inputText = reader.readLine();
+                    processText(inputText);
+                    break;
+                case "2":
+                    System.out.println("Enter the path to the text file:");
+                    String filePath = reader.readLine();
+                    processFile(filePath);
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
             }
-        });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void processText(String text) {
+        String[] words = text.split("\\s+");
+        int totalWords = words.length;
+        Map<String, Integer> wordFrequency = getWordFrequency(words);
+        int uniqueWords = wordFrequency.size();
+
+        System.out.println("Total words: " + totalWords);
+        System.out.println("Unique words: " + uniqueWords);
+        System.out.println("Word frequency:");
+
+        for (Map.Entry<String, Integer> entry : wordFrequency.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+    }
+
+    public static void processFile(String filePath) {
+        try (BufferedReader fileReader = new BufferedReader(new FileReader(filePath))) {
+            StringBuilder contentBuilder = new StringBuilder();
+            String line;
+            while ((line = fileReader.readLine()) != null) {
+                contentBuilder.append(line).append("\n");
+            }
+            String fileContent = contentBuilder.toString();
+            processText(fileContent);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Map<String, Integer> getWordFrequency(String[] words) {
+        Map<String, Integer> wordFrequency = new HashMap<>();
+        for (String word : words) {
+            word = word.replaceAll("[^a-zA-Z]", "").toLowerCase();
+            wordFrequency.put(word, wordFrequency.getOrDefault(word, 0) + 1);
+        }
+        return wordFrequency;
     }
 }
-
